@@ -12,6 +12,18 @@
 </head>
 <body>
 
+  <!-- Loading Screen -->
+  <div class="auth-loading" id="authLoading">
+    <div class="auth-loading-inner">
+      <div class="auth-loading-logo">🌿</div>
+      <div class="auth-loading-text">AirLeaf</div>
+      <div class="auth-loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- App Content (hidden until logged in) -->
+  <div id="appContent" class="hidden">
+
   <!-- ===== NAV ===== -->
   <nav class="nav" id="mainNav">
     <div class="nav-inner">
@@ -705,6 +717,8 @@
     </div>
   </div>
 
+  </div><!-- end #appContent -->
+
   <!-- ===== LOGIN MODAL ===== -->
   <div class="auth-overlay hidden" id="authOverlay">
     <div class="auth-modal">
@@ -802,25 +816,35 @@
 
     // ── Auth state listener ──
     onAuthStateChanged(auth, (user) => {
-      const loginBtn  = document.getElementById('navLoginBtn');
-      const logoutBtn = document.getElementById('navLogoutBtn');
-      const chip      = document.getElementById('navProfileChip');
-      const chipName  = document.getElementById('navProfileName');
-      const chipAvatar= document.getElementById('navProfileAvatar');
+      // Hide loading screen
+      document.getElementById('authLoading')?.classList.add('hidden');
+
+      const loginBtn   = document.getElementById('navLoginBtn');
+      const logoutBtn  = document.getElementById('navLogoutBtn');
+      const chip       = document.getElementById('navProfileChip');
+      const chipName   = document.getElementById('navProfileName');
+      const chipAvatar = document.getElementById('navProfileAvatar');
+      const appContent = document.getElementById('appContent');
+      const authOverlay= document.getElementById('authOverlay');
 
       if (user) {
-        // Logged in
+        // ✅ Logged in — show website
+        appContent?.classList.remove('hidden');
+        authOverlay?.classList.add('hidden');
+
         loginBtn?.classList.add('hidden');
         logoutBtn?.classList.remove('hidden');
-        // Update nav chip
+
+        // Nav chip
         chip?.classList.remove('hidden');
         document.getElementById('navProfileBtn')?.classList.add('hidden');
-        if (chipName)  chipName.textContent  = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-        if (chipAvatar) chipAvatar.textContent = user.photoURL ? '' : '🌿';
+        if (chipName)   chipName.textContent   = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+        if (chipAvatar) chipAvatar.textContent  = user.photoURL ? '' : '🌿';
         if (user.photoURL && chipAvatar) {
           chipAvatar.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`;
         }
-        // Update profile hero
+
+        // Profile hero
         const heroGuest = document.getElementById('profileHeroGuest');
         const heroUser  = document.getElementById('profileHeroUser');
         if (heroGuest && heroUser) {
@@ -834,8 +858,13 @@
           document.getElementById('profileHeroMeta').textContent = '📧 ' + user.email;
         }
         window.showToast?.('👋 Welcome, ' + (user.displayName || user.email.split('@')[0]) + '!');
+
       } else {
-        // Logged out
+        // ❌ Logged out — hide website, show login
+        appContent?.classList.add('hidden');
+        authOverlay?.classList.remove('hidden');
+        // Remove close button — user MUST login
+        document.getElementById('authClose')?.classList.add('hidden');
         loginBtn?.classList.remove('hidden');
         logoutBtn?.classList.add('hidden');
       }
@@ -846,8 +875,11 @@
     let isLogin = true;
 
     window.openAuthModal = () => overlay?.classList.remove('hidden');
-    document.getElementById('authClose')?.addEventListener('click', () => overlay?.classList.add('hidden'));
-    overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.add('hidden'); });
+
+    // Close button only works when logged in
+    document.getElementById('authClose')?.addEventListener('click', () => {
+      if (auth.currentUser) overlay?.classList.add('hidden');
+    });
 
     // Tabs
     document.getElementById('tabLogin')?.addEventListener('click', () => {
@@ -855,7 +887,6 @@
       document.getElementById('tabLogin').classList.add('active');
       document.getElementById('tabSignup').classList.remove('active');
       document.getElementById('authSubmitBtn').textContent = 'Login';
-      document.getElementById('authSwitchLink').textContent = 'Sign up';
       document.querySelector('.auth-switch').innerHTML = "Don't have an account? <span id='authSwitchLink'>Sign up</span>";
       document.getElementById('authSwitchLink')?.addEventListener('click', () => document.getElementById('tabSignup').click());
     });
@@ -883,7 +914,6 @@
         } else {
           await createUserWithEmailAndPassword(auth, email, password);
         }
-        overlay.classList.add('hidden');
       } catch (err) {
         errEl.textContent = err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, '');
         errEl.classList.remove('hidden');
@@ -894,7 +924,6 @@
     document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
       try {
         await signInWithPopup(auth, provider);
-        overlay.classList.add('hidden');
       } catch (err) {
         const errEl = document.getElementById('authError');
         errEl.textContent = 'Google sign-in failed. Please try again.';
@@ -902,11 +931,10 @@
       }
     });
 
-    // Nav login/logout
+    // Logout
     document.getElementById('navLoginBtn')?.addEventListener('click', () => window.openAuthModal());
     document.getElementById('navLogoutBtn')?.addEventListener('click', async () => {
       await signOut(auth);
-      window.showToast?.('👋 Logged out successfully!');
     });
 
     console.log('✅ Firebase fully connected — AirLeaf');
