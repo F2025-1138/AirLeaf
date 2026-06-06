@@ -747,11 +747,14 @@
       <div class="auth-form">
         <div class="auth-field">
           <label>Email</label>
-          <input type="email" id="authEmail" placeholder="your@email.com"/>
+          <input type="email" id="authEmail" placeholder="your@email.com" autocomplete="email"/>
         </div>
         <div class="auth-field">
           <label>Password</label>
-          <input type="password" id="authPassword" placeholder="••••••••"/>
+          <div class="auth-password-wrap">
+            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password"/>
+            <button type="button" class="auth-eye-btn" id="togglePassword" title="Show/hide password">👁️</button>
+          </div>
         </div>
         <div class="auth-error hidden" id="authError"></div>
         <button class="auth-submit-btn" id="authSubmitBtn">Login</button>
@@ -814,6 +817,31 @@
       }
     };
 
+    // ── Helper: clear login form ──
+    function clearAuthForm() {
+      document.getElementById('authEmail').value    = '';
+      document.getElementById('authPassword').value = '';
+      document.getElementById('authError').classList.add('hidden');
+      // Reset password visibility
+      const pwd = document.getElementById('authPassword');
+      if (pwd) pwd.type = 'password';
+      const eye = document.getElementById('togglePassword');
+      if (eye) eye.textContent = '👁️';
+    }
+
+    // ── Password show/hide toggle ──
+    document.getElementById('togglePassword')?.addEventListener('click', () => {
+      const pwd = document.getElementById('authPassword');
+      const eye = document.getElementById('togglePassword');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        eye.textContent = '🙈';
+      } else {
+        pwd.type = 'password';
+        eye.textContent = '👁️';
+      }
+    });
+
     // ── Auth state listener ──
     onAuthStateChanged(auth, (user) => {
       // Hide loading screen
@@ -831,6 +859,7 @@
         // ✅ Logged in — show website
         appContent?.classList.remove('hidden');
         authOverlay?.classList.add('hidden');
+        clearAuthForm();
 
         loginBtn?.classList.add('hidden');
         logoutBtn?.classList.remove('hidden');
@@ -860,10 +889,10 @@
         window.showToast?.('👋 Welcome, ' + (user.displayName || user.email.split('@')[0]) + '!');
 
       } else {
-        // ❌ Logged out — hide website, show login
+        // ❌ Logged out — hide website, show login, clear form
         appContent?.classList.add('hidden');
         authOverlay?.classList.remove('hidden');
-        // Remove close button — user MUST login
+        clearAuthForm();
         document.getElementById('authClose')?.classList.add('hidden');
         loginBtn?.classList.remove('hidden');
         logoutBtn?.classList.add('hidden');
@@ -876,7 +905,6 @@
 
     window.openAuthModal = () => overlay?.classList.remove('hidden');
 
-    // Close button only works when logged in
     document.getElementById('authClose')?.addEventListener('click', () => {
       if (auth.currentUser) overlay?.classList.add('hidden');
     });
@@ -907,7 +935,10 @@
       const email    = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value.trim();
       const errEl    = document.getElementById('authError');
+      const btn      = document.getElementById('authSubmitBtn');
       errEl.classList.add('hidden');
+      btn.textContent = '⏳ Please wait...';
+      btn.disabled = true;
       try {
         if (isLogin) {
           await signInWithEmailAndPassword(auth, email, password);
@@ -915,23 +946,36 @@
           await createUserWithEmailAndPassword(auth, email, password);
         }
       } catch (err) {
-        errEl.textContent = err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, '');
+        errEl.textContent = err.message.replace('Firebase: ', '').replace(/\(auth\/.*\)\.?/, '').trim();
         errEl.classList.remove('hidden');
+      } finally {
+        btn.textContent = isLogin ? 'Login' : 'Create Account';
+        btn.disabled = false;
       }
     });
 
-    // Google sign-in
+    // Google sign-in — fix for popup
     document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
+      const errEl = document.getElementById('authError');
+      const btn   = document.getElementById('googleSignInBtn');
+      errEl.classList.add('hidden');
+      btn.textContent = '⏳ Connecting...';
+      btn.disabled = true;
       try {
+        provider.setCustomParameters({ prompt: 'select_account' });
         await signInWithPopup(auth, provider);
       } catch (err) {
-        const errEl = document.getElementById('authError');
-        errEl.textContent = 'Google sign-in failed. Please try again.';
-        errEl.classList.remove('hidden');
+        if (err.code !== 'auth/popup-closed-by-user') {
+          errEl.textContent = 'Google sign-in failed: ' + (err.message || 'Please try again.');
+          errEl.classList.remove('hidden');
+        }
+      } finally {
+        btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google"/> Continue with Google';
+        btn.disabled = false;
       }
     });
 
-    // Logout
+    // Nav login/logout
     document.getElementById('navLoginBtn')?.addEventListener('click', () => window.openAuthModal());
     document.getElementById('navLogoutBtn')?.addEventListener('click', async () => {
       await signOut(auth);
