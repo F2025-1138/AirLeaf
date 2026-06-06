@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AirLeaf — Plant-Powered Air Quality</title>
+  <meta name="description" content="Check your indoor air quality score, track history on your dashboard, and get personalised plant recommendations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#" data-page="home">🌿 AirLeaf</a>
+      <div class="nav-links">
+        <button class="nav-btn active" data-page="home">Home</button>
+        <button class="nav-btn" data-page="dashboard">Dashboard</button>
+        <button class="nav-btn" data-page="aqi">AQI Guide</button>
+        <div class="nav-profile-chip hidden" id="navProfileChip" data-page="profile">
+          <div class="nav-profile-avatar" id="navProfileAvatar">🌿</div>
+          <span class="nav-profile-name" id="navProfileName">Profile</span>
+        </div>
+        <button class="nav-btn" data-page="profile" id="navProfileBtn">Profile</button>
+        <button class="nav-btn nav-feedback-btn" id="openFeedback">💬 Feedback</button>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">☰</button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <button class="nav-btn active" data-page="home">Home</button>
+      <button class="nav-btn" data-page="dashboard">Dashboard</button>
+      <button class="nav-btn" data-page="aqi">AQI Guide</button>
+      <button class="nav-btn" data-page="profile">Profile</button>
+      <button class="nav-btn" id="openFeedbackMobile">💬 Feedback</button>
+    </div>
+  </nav>
+
+  <!-- ===== PAGE: HOME ===== -->
+  <div id="page-home" class="page active">
+    <header class="hero">
+      <div class="hero-bg-decor" aria-hidden="true">
+        <span class="leaf leaf-1">🌿</span>
+        <span class="leaf leaf-2">🍃</span>
+        <span class="leaf leaf-3">🌱</span>
+        <span class="leaf leaf-4">🍀</span>
+        <span class="leaf leaf-5">🌿</span>
+      </div>
+      <div class="hero-content">
+        <span class="hero-badge">🌍 Eco-Friendly Tool</span>
+        <h1 class="hero-title">Plant-Powered<br/><em>Air Quality</em> Checker</h1>
+        <p class="hero-desc">
+          Indoor air can be <strong>2–5× more polluted</strong> than outdoor air. Dust, VOCs, and
+          poor ventilation silently affect your health every day. Find out your room's air quality
+          score and discover the perfect plants to purify your space — naturally.
+        </p>
+        <a href="#checker" class="btn-primary">Check Your Air Quality ↓</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-pill">🌡️ <strong>90%</strong> of time spent indoors</div>
+        <div class="stat-pill">🪴 <strong>Plants</strong> reduce toxins up to 87%</div>
+        <div class="stat-pill">💨 <strong>Poor air</strong> impacts focus & sleep</div>
+      </div>
+    </header>
+
+    <main>
+      <!-- CHECKER FORM -->
+      <section id="checker" class="section form-section">
+        <div class="section-label">Step 1</div>
+        <h2 class="section-title">Tell Us About Your Room</h2>
+        <p class="section-sub">Answer 4 quick questions to calculate your personalised Air Quality Score.</p>
+
+        <div class="form-card">
+
+          <!-- Room Type Dropdown -->
+          <div class="field-group">
+            <label class="field-label" for="roomTypeSelect">🏠 Room Type</label>
+            <p class="field-hint">What kind of room are you analysing?</p>
+            <div class="custom-select-wrap">
+              <select class="custom-select" id="roomTypeSelect">
+                <option value="">— Select room type —</option>
+                <option value="bedroom">🛏️ Bedroom — Quiet, low activity</option>
+                <option value="kitchen">🍳 Kitchen — Fumes &amp; steam</option>
+                <option value="living">🛋️ Living Room — Dust &amp; furniture VOCs</option>
+                <option value="office">💼 Office / Study — Electronics &amp; heat</option>
+              </select>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+            <div class="field-error hidden" id="err-roomType">Please select a room type.</div>
+          </div>
+
+          <!-- Room Size Dropdown -->
+          <div class="field-group">
+            <label class="field-label" for="roomSizeSelect">📐 Room Size</label>
+            <p class="field-hint">Larger rooms dilute pollutants but need more plants.</p>
+            <div class="custom-select-wrap">
+              <select class="custom-select" id="roomSizeSelect">
+                <option value="">— Select room size —</option>
+                <option value="small">🟢 Small — Under 150 sq ft (e.g. single bedroom)</option>
+                <option value="medium">🟡 Medium — 150–300 sq ft (e.g. master bedroom)</option>
+                <option value="large">🔴 Large — Over 300 sq ft (e.g. open-plan living)</option>
+              </select>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+            <div class="field-error hidden" id="err-roomSize">Please select a room size.</div>
+          </div>
+
+          <!-- Ventilation Dropdown -->
+          <div class="field-group">
+            <label class="field-label" for="ventilationSelect">💨 Ventilation Level</label>
+            <p class="field-hint">Good airflow is the single biggest factor in indoor air quality.</p>
+            <div class="custom-select-wrap">
+              <select class="custom-select" id="ventilationSelect">
+                <option value="">— Select ventilation level —</option>
+                <option value="poor">😶‍🌫️ Poor — No windows, sealed room or no AC</option>
+                <option value="average">🌬️ Average — Occasional airflow or window opened sometimes</option>
+                <option value="good">✅ Good — Windows open regularly or fresh air system</option>
+              </select>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+            <div class="field-error hidden" id="err-ventilation">Please select a ventilation level.</div>
+          </div>
+
+          <!-- Hidden inputs to keep existing JS selector logic working -->
+          <div id="roomType" style="display:none"></div>
+          <div id="roomSize" style="display:none"></div>
+          <div id="ventilation" style="display:none"></div>
+
+          <!-- Pollution Sources Dropdown -->
+          <div class="field-group">
+            <label class="field-label" for="pollutionSource">🧪 Main Pollution Source</label>
+            <p class="field-hint">Select the biggest air-quality concern in this room.</p>
+            <div class="custom-select-wrap">
+              <select class="custom-select" id="pollutionSource">
+                <option value="">— Select a source —</option>
+                <optgroup label="🏠 Common Sources">
+                  <option value="none">No known sources</option>
+                  <option value="dust">Dust &amp; poor cleaning</option>
+                  <option value="pets">Pets &amp; dander</option>
+                  <option value="mold">Damp &amp; mould risk</option>
+                </optgroup>
+                <optgroup label="🔥 Combustion &amp; Fumes">
+                  <option value="cooking">Cooking fumes &amp; steam</option>
+                  <option value="smoking">Smoking / tobacco</option>
+                  <option value="candles">Candles &amp; incense</option>
+                  <option value="gas">Gas appliances / heaters</option>
+                </optgroup>
+                <optgroup label="🧴 Chemicals &amp; Materials">
+                  <option value="cleaners">Cleaning products &amp; sprays</option>
+                  <option value="paint">Fresh paint or varnish</option>
+                  <option value="electronics">Electronics &amp; printers</option>
+                  <option value="furniture">New furniture / carpets (VOCs)</option>
+                </optgroup>
+              </select>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+          </div>
+
+          <button class="btn-primary btn-check" id="checkBtn" type="button">
+            🔍 Analyse My Air Quality
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="results" class="section results-section hidden">
+        <div class="score-card">
+          <div class="score-ring-wrap">
+            <svg class="score-ring" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50"/>
+              <circle class="ring-fill" cx="60" cy="60" r="50" id="ringFill"/>
+            </svg>
+            <div class="score-text">
+              <span class="score-number" id="scoreNumber">0</span>
+              <span class="score-label">/ 100</span>
+            </div>
+          </div>
+          <div class="score-info">
+            <div class="section-label" id="statusLabel">Calculating…</div>
+            <h2 class="score-title" id="scoreTitle">Your Air Quality Score</h2>
+            <p class="score-desc" id="scoreDesc">We're computing your result…</p>
+            <button class="btn-save-result" id="saveResultBtn" type="button">💾 Save to Dashboard</button>
+          </div>
+        </div>
+
+        <!-- AQI Quick Reference -->
+        <div class="aqi-quick" id="aqiQuick"></div>
+
+        <div class="chart-wrap">
+          <h3 class="chart-heading">📊 Score Breakdown</h3>
+          <div class="chart-container">
+            <canvas id="airChart"></canvas>
+          </div>
+        </div>
+
+        <div class="section-label" style="text-align:center;margin-top:2.5rem;">Step 2</div>
+        <h2 class="section-title" id="plantsHeading" style="text-align:center;">Recommended Plants for You</h2>
+        <p class="section-sub" style="text-align:center;">These plants are best suited for your room's air quality needs.</p>
+        <div class="plants-grid" id="plantsGrid"></div>
+      </section>
+
+      <!-- TIPS -->
+      <section id="tips" class="section tips-section">
+        <div class="section-label">Always Helpful</div>
+        <h2 class="section-title">Eco-Friendly Air Tips</h2>
+        <p class="section-sub">Simple habits that make a big difference every day.</p>
+        <div class="tips-grid">
+          <div class="tip-card"><div class="tip-icon">🪟</div><h3>Open Windows Daily</h3><p>Even 10 minutes of fresh air circulation in the morning can flush out overnight VOCs and CO₂ build-up.</p></div>
+          <div class="tip-card"><div class="tip-icon">🕯️</div><h3>Ditch Synthetic Candles</h3><p>Paraffin candles release toluene and benzene. Swap to beeswax or soy candles with cotton wicks for cleaner air.</p></div>
+          <div class="tip-card"><div class="tip-icon">🧹</div><h3>Vacuum with HEPA Filters</h3><p>Standard vacuums recirculate fine particles. HEPA-filtered vacuums trap 99.97% of dust, pollen, and pet dander.</p></div>
+          <div class="tip-card"><div class="tip-icon">🌿</div><h3>One Plant per 100 sq ft</h3><p>NASA research suggests placing one medium plant per 100 square feet for measurable air purification effects.</p></div>
+          <div class="tip-card"><div class="tip-icon">🧴</div><h3>Choose Low-VOC Products</h3><p>Paints, cleaners, and air fresheners can off-gas harmful chemicals. Look for "Low-VOC" or "Zero-VOC" labels.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>🌱 <strong>AirLeaf</strong> — Plant-Powered Air Quality Checker</p>
+      <p class="footer-sub">Built with pure HTML, CSS & JavaScript · No frameworks · Just plants & passion 🍃</p>
+    </footer>
+  </div>
+
+  <!-- ===== PAGE: DASHBOARD ===== -->
+  <div id="page-dashboard" class="page">
+    <div class="page-header">
+      <div class="page-header-inner">
+        <h1 class="page-header-title">📊 My Dashboard</h1>
+        <p class="page-header-sub">Track your air quality checks over time.</p>
+      </div>
+    </div>
+    <div class="dash-container">
+
+      <!-- Stats row -->
+      <div class="dash-stats" id="dashStats">
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">🔬</div>
+          <div class="dash-stat-val" id="statTotal">0</div>
+          <div class="dash-stat-label">Total Checks</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">⭐</div>
+          <div class="dash-stat-val" id="statBest">—</div>
+          <div class="dash-stat-label">Best Score</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">📈</div>
+          <div class="dash-stat-val" id="statAvg">—</div>
+          <div class="dash-stat-label">Average Score</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">🗓️</div>
+          <div class="dash-stat-val" id="statLast">—</div>
+          <div class="dash-stat-label">Last Checked</div>
+        </div>
+      </div>
+
+      <!-- History chart -->
+      <div class="dash-chart-card" id="dashChartCard">
+        <h3 class="chart-heading">📉 Score History</h3>
+        <div class="chart-container" style="height:220px;">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- History list -->
+      <div class="dash-history">
+        <div class="dash-history-header">
+          <h3 class="chart-heading" style="margin-bottom:0">🕒 Recent Checks</h3>
+          <button class="btn-clear-history" id="clearHistory" type="button">🗑 Clear All</button>
+        </div>
+        <div id="historyList" class="history-list">
+          <div class="empty-state">
+            <div class="empty-icon">🌱</div>
+            <p>No checks saved yet.<br/>Run an analysis and click "Save to Dashboard".</p>
+            <button class="btn-primary" style="margin-top:1rem;animation:none;" data-page="home">Go to Checker</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PAGE: AQI GUIDE ===== -->
+  <div id="page-aqi" class="page">
+
+    <!-- Hero Header -->
+    <div class="aqi-hero">
+      <div class="aqi-hero-inner">
+        <div class="aqi-hero-badge">WHO Global Air Quality Standards</div>
+        <h1 class="aqi-hero-title">Air Quality Index</h1>
+        <p class="aqi-hero-sub">A scientific guide to understanding indoor &amp; outdoor air pollution levels and their impact on human health.</p>
+        <div class="aqi-hero-stats">
+          <div class="aqi-hero-stat"><span class="aqi-hero-stat-num">7M+</span><span class="aqi-hero-stat-label">deaths/year from air pollution</span></div>
+          <div class="aqi-hero-stat-div"></div>
+          <div class="aqi-hero-stat"><span class="aqi-hero-stat-num">99%</span><span class="aqi-hero-stat-label">of world breathes polluted air</span></div>
+          <div class="aqi-hero-stat-div"></div>
+          <div class="aqi-hero-stat"><span class="aqi-hero-stat-num">2–5×</span><span class="aqi-hero-stat-label">worse indoors than outdoors</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="aqi-container">
+
+      <!-- Gradient Meter -->
+      <div class="aqi-meter-card">
+        <h2 class="aqi-section-heading">The AQI Spectrum</h2>
+        <p class="aqi-section-sub">Air Quality Index ranges from 0 (cleanest) to 500 (most hazardous). Each band has distinct health implications.</p>
+        <div class="aqi-meter">
+          <div class="aqi-meter-bar">
+            <div class="aqi-meter-seg" style="--seg-color:#00e400;--seg-w:10%">
+              <div class="aqi-meter-label">0</div>
+            </div>
+            <div class="aqi-meter-seg" style="--seg-color:#ffff00;--seg-w:10%">
+              <div class="aqi-meter-label">50</div>
+            </div>
+            <div class="aqi-meter-seg" style="--seg-color:#ff7e00;--seg-w:10%">
+              <div class="aqi-meter-label">100</div>
+            </div>
+            <div class="aqi-meter-seg" style="--seg-color:#ff0000;--seg-w:10%">
+              <div class="aqi-meter-label">150</div>
+            </div>
+            <div class="aqi-meter-seg" style="--seg-color:#8f3f97;--seg-w:30%">
+              <div class="aqi-meter-label">200</div>
+            </div>
+            <div class="aqi-meter-seg" style="--seg-color:#7e0023;--seg-w:30%">
+              <div class="aqi-meter-label">300+</div>
+            </div>
+          </div>
+          <div class="aqi-meter-labels">
+            <span style="color:#00b300">Good</span>
+            <span style="color:#b8b800">Moderate</span>
+            <span style="color:#cc6500">Sensitive</span>
+            <span style="color:#cc0000">Unhealthy</span>
+            <span style="color:#7a3480">Very Unhealthy</span>
+            <span style="color:#7e0023">Hazardous</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Cards -->
+      <h2 class="aqi-section-heading" style="margin-bottom:1.25rem">Detailed Level Breakdown</h2>
+      <div class="aqi-pro-grid">
+
+        <div class="aqi-pro-card" style="--lvl:#00b300;--lvl-bg:#f0fff4">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#00e400"></div>
+            <div class="aqi-pro-range">0 – 50</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Good</h3>
+              <span class="aqi-pro-badge" style="background:#e6ffe6;color:#00733a">✅ Safe</span>
+            </div>
+            <p class="aqi-pro-desc">Air quality is satisfactory with little or no risk to health. Ideal for all indoor and outdoor activities, including vigorous exercise.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">👨‍👩‍👧</span><span>Safe for all groups including children and elderly</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🪟</span><span>Open windows — let fresh air in freely</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🏃</span><span>All outdoor activities recommended</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aqi-pro-card" style="--lvl:#b8a800;--lvl-bg:#fffef0">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#ffff00;border:1px solid #ddd"></div>
+            <div class="aqi-pro-range">51 – 100</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Moderate</h3>
+              <span class="aqi-pro-badge" style="background:#fffbe6;color:#8a7000">⚠️ Caution</span>
+            </div>
+            <p class="aqi-pro-desc">Acceptable air quality, but some pollutants may be a concern for unusually sensitive individuals. General public is unlikely to be affected.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🤧</span><span>Sensitive individuals may notice mild irritation</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🪴</span><span>Consider adding air-purifying plants</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">⏱️</span><span>Limit prolonged strenuous outdoor activity</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aqi-pro-card" style="--lvl:#cc6500;--lvl-bg:#fff8f0">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#ff7e00"></div>
+            <div class="aqi-pro-range">101 – 150</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Unhealthy for Sensitive Groups</h3>
+              <span class="aqi-pro-badge" style="background:#fff3e6;color:#a04f00">🫁 At Risk</span>
+            </div>
+            <p class="aqi-pro-desc">Sensitive groups — those with asthma, heart disease, the elderly, and children — may experience health effects. The general public is less likely to be affected.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">👴</span><span>Elderly &amp; children: avoid outdoor exertion</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🫀</span><span>Heart/lung conditions: reduce outdoor activity</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🏠</span><span>Keep windows closed, run air purifier</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aqi-pro-card" style="--lvl:#cc0000;--lvl-bg:#fff5f5">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#ff0000"></div>
+            <div class="aqi-pro-range">151 – 200</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Unhealthy</h3>
+              <span class="aqi-pro-badge" style="background:#ffe6e6;color:#990000">😷 Warning</span>
+            </div>
+            <p class="aqi-pro-desc">Everyone may begin to experience health effects. Members of sensitive groups may experience more serious effects. Health alert issued.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">😷</span><span>Wear a mask outdoors (N95 recommended)</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🚪</span><span>Keep doors &amp; windows sealed indoors</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🏥</span><span>Seek medical help if symptoms develop</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aqi-pro-card" style="--lvl:#7a3480;--lvl-bg:#fdf5ff">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#8f3f97"></div>
+            <div class="aqi-pro-range">201 – 300</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Very Unhealthy</h3>
+              <span class="aqi-pro-badge" style="background:#f5e6ff;color:#6a2080">🚨 Alert</span>
+            </div>
+            <p class="aqi-pro-desc">Health alert: everyone may experience more serious health effects. Avoid all outdoor physical activity. Remain indoors with air filtration.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🏠</span><span>Stay indoors — seal gaps around doors/windows</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🌬️</span><span>Run HEPA air purifier on highest setting</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">📵</span><span>Cancel all non-essential outdoor travel</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aqi-pro-card" style="--lvl:#7e0023;--lvl-bg:#fff5f7">
+          <div class="aqi-pro-left">
+            <div class="aqi-pro-dot" style="background:#7e0023"></div>
+            <div class="aqi-pro-range">301+</div>
+          </div>
+          <div class="aqi-pro-body">
+            <div class="aqi-pro-header">
+              <h3 class="aqi-pro-level">Hazardous</h3>
+              <span class="aqi-pro-badge" style="background:#ffe6ec;color:#7e0023">☠️ Emergency</span>
+            </div>
+            <p class="aqi-pro-desc">Emergency conditions. The entire population is likely to be affected. Serious risk of premature death for sensitive groups. Immediate action required.</p>
+            <div class="aqi-pro-details">
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🚨</span><span>Emergency status — follow official guidance</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">😷</span><span>N95/P100 mask mandatory if going outside</span></div>
+              <div class="aqi-pro-detail"><span class="aqi-pro-detail-icon">🏥</span><span>Vulnerable groups: seek medical shelter</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pollutants Section -->
+      <div class="aqi-pollutants-section">
+        <div class="aqi-pollutants-header">
+          <h2 class="aqi-section-heading">Key Indoor Pollutants</h2>
+          <p class="aqi-section-sub">Understanding what's in your air is the first step to improving it.</p>
+        </div>
+        <div class="aqi-pollutants-grid">
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#fff0f0"><span>🫧</span></div>
+              <div>
+                <div class="aqi-pollutant-name">PM2.5</div>
+                <div class="aqi-pollutant-type">Particulate Matter</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Fine particles under 2.5 microns from cooking, candles, and smoke. Small enough to penetrate deep into lung tissue and enter the bloodstream.</p>
+            <div class="aqi-pollutant-source">📍 Sources: cooking, candles, smoking, dust</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:95%;background:#ff4444"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#ff4444">Very High</strong></div>
+          </div>
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#fff8e6"><span>🧪</span></div>
+              <div>
+                <div class="aqi-pollutant-name">VOCs</div>
+                <div class="aqi-pollutant-type">Volatile Organic Compounds</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Chemical gases from paints, cleaners, and new furniture. Includes benzene and formaldehyde — both classified as carcinogens by the WHO.</p>
+            <div class="aqi-pollutant-source">📍 Sources: paint, furniture, cleaning products</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:80%;background:#ff7e00"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#ff7e00">High</strong></div>
+          </div>
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#e6f4ff"><span>💨</span></div>
+              <div>
+                <div class="aqi-pollutant-name">CO₂</div>
+                <div class="aqi-pollutant-type">Carbon Dioxide</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Produced by breathing, accumulates in sealed rooms. Elevated CO₂ causes drowsiness, poor concentration, and reduced cognitive performance.</p>
+            <div class="aqi-pollutant-source">📍 Sources: breathing, gas stoves, poor ventilation</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:60%;background:#e5c000"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#b89800">Moderate</strong></div>
+          </div>
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#fff0f8"><span>🌡️</span></div>
+              <div>
+                <div class="aqi-pollutant-name">CO</div>
+                <div class="aqi-pollutant-type">Carbon Monoxide</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Colourless, odourless gas from incomplete combustion. Prevents blood from carrying oxygen — even small amounts can be life-threatening.</p>
+            <div class="aqi-pollutant-source">📍 Sources: gas heaters, stoves, car exhaust</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:90%;background:#ff2222"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#ff2222">Critical</strong></div>
+          </div>
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#f0fff5"><span>🍄</span></div>
+              <div>
+                <div class="aqi-pollutant-name">Mould Spores</div>
+                <div class="aqi-pollutant-type">Biological Contaminant</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Microscopic fungal spores that thrive in damp, poorly ventilated areas. Trigger allergic reactions, asthma attacks, and respiratory infections.</p>
+            <div class="aqi-pollutant-source">📍 Sources: damp walls, bathrooms, leaks</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:70%;background:#ff7e00"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#ff7e00">High</strong></div>
+          </div>
+          <div class="aqi-pollutant-card">
+            <div class="aqi-pollutant-top">
+              <div class="aqi-pollutant-icon-wrap" style="background:#f5f0ff"><span>🐾</span></div>
+              <div>
+                <div class="aqi-pollutant-name">Pet Dander</div>
+                <div class="aqi-pollutant-type">Biological Allergen</div>
+              </div>
+            </div>
+            <p class="aqi-pollutant-desc">Microscopic flakes of skin shed by pets. Can remain airborne for hours and settle into carpets, bedding, and upholstery for months.</p>
+            <div class="aqi-pollutant-source">📍 Sources: cats, dogs, birds, rodents</div>
+            <div class="aqi-risk-bar"><div class="aqi-risk-fill" style="width:50%;background:#e5c000"></div></div>
+            <div class="aqi-risk-label">Risk Level: <strong style="color:#b89800">Moderate</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHO Standards Banner -->
+      <div class="aqi-who-banner">
+        <div class="aqi-who-banner-icon">🌍</div>
+        <div class="aqi-who-banner-body">
+          <h3 class="aqi-who-banner-title">WHO Air Quality Guidelines (2021)</h3>
+          <p class="aqi-who-banner-desc">The World Health Organization recommends PM2.5 annual mean of <strong>5 µg/m³</strong> and 24-hour mean of <strong>15 µg/m³</strong>. Most cities worldwide exceed these limits — making indoor air quality management critical for everyone.</p>
+        </div>
+        <a class="aqi-who-banner-btn" href="https://www.who.int/news-room/feature-stories/detail/what-are-the-who-air-quality-guidelines" target="_blank" rel="noopener">Read WHO Guidelines ↗</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PAGE: PROFILE ===== -->
+  <div id="page-profile" class="page">
+
+    <!-- Profile Hero Banner -->
+    <div class="profile-hero" id="profileHero">
+      <div class="profile-hero-inner">
+        <!-- Logged-out state -->
+        <div class="profile-hero-guest" id="profileHeroGuest">
+          <div class="profile-hero-guest-icon">👤</div>
+          <div>
+            <h2 class="profile-hero-title">My Profile</h2>
+            <p class="profile-hero-sub">Fill in your details and save to personalise your AirLeaf experience.</p>
+          </div>
+        </div>
+        <!-- Logged-in state (shown after save) -->
+        <div class="profile-hero-user hidden" id="profileHeroUser">
+          <div class="profile-hero-avatar" id="profileHeroAvatar">🌿</div>
+          <div class="profile-hero-info">
+            <div class="profile-hero-greeting">Welcome back,</div>
+            <h2 class="profile-hero-name" id="profileHeroName">—</h2>
+            <div class="profile-hero-meta" id="profileHeroMeta"></div>
+          </div>
+          <div class="profile-hero-verified">
+            <span class="profile-verified-badge">✔ Profile Saved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-container">
+
+      <!-- Avatar -->
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" id="profileAvatar">🌿</div>
+        <div class="avatar-picker hidden" id="avatarPicker">
+          <button class="avatar-opt" data-avatar="🌿">🌿</button>
+          <button class="avatar-opt" data-avatar="🌱">🌱</button>
+          <button class="avatar-opt" data-avatar="🍃">🍃</button>
+          <button class="avatar-opt" data-avatar="🌸">🌸</button>
+          <button class="avatar-opt" data-avatar="🌻">🌻</button>
+          <button class="avatar-opt" data-avatar="🪴">🪴</button>
+        </div>
+        <p class="avatar-hint">Tap to change avatar</p>
+      </div>
+
+      <!-- Profile form -->
+      <div class="profile-card">
+        <h3 class="profile-section-title">Personal Information</h3>
+        <div class="profile-form">
+          <div class="profile-field">
+            <label class="profile-label" for="profileName">Full Name</label>
+            <input class="profile-input" id="profileName" type="text" placeholder="Your name" />
+          </div>
+          <div class="profile-field">
+            <label class="profile-label" for="profileEmail">Email Address</label>
+            <input class="profile-input" id="profileEmail" type="email" placeholder="you@example.com" />
+          </div>
+          <div class="profile-field">
+            <label class="profile-label" for="profileCity">City / Location</label>
+            <input class="profile-input" id="profileCity" type="text" placeholder="e.g. Lahore" />
+          </div>
+          <div class="profile-field">
+            <label class="profile-label" for="profileHome">Home Type</label>
+            <select class="profile-input" id="profileHome">
+              <option value="">Select home type…</option>
+              <option>Apartment</option>
+              <option>House</option>
+              <option>Studio</option>
+              <option>Office / Co-working</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 class="profile-section-title" style="margin-top:2rem">Health Considerations</h3>
+        <div class="profile-checks">
+          <label class="check-item"><input type="checkbox" id="hasAsthma" /><span>Asthma or respiratory conditions</span></label>
+          <label class="check-item"><input type="checkbox" id="hasAllergies" /><span>Allergies (dust, pollen, pets)</span></label>
+          <label class="check-item"><input type="checkbox" id="hasChildren" /><span>Young children at home</span></label>
+          <label class="check-item"><input type="checkbox" id="hasPets" /><span>Pets at home</span></label>
+        </div>
+
+        <button class="btn-save-profile-new" id="saveProfile" type="button">
+          <span class="btn-save-inner" id="btnSaveInner">
+            <span class="btn-save-icon">💾</span>
+            <span class="btn-save-text">Save Profile</span>
+          </span>
+        </button>
+        <div class="profile-saved-msg hidden" id="profileSavedMsg">✅ Profile saved!</div>
+      </div>
+
+      <!-- Profile stats summary -->
+      <div class="profile-summary" id="profileSummary">
+        <h3 class="profile-section-title">Your Air Quality Summary</h3>
+        <div id="profileSummaryContent">
+          <p style="color:var(--text-muted);font-size:0.9rem;">Complete at least one check to see your summary here.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== FEEDBACK MODAL ===== -->
+  <div class="modal-overlay hidden" id="feedbackOverlay" role="dialog" aria-modal="true" aria-label="Feedback form">
+    <div class="modal" id="feedbackModal">
+      <button class="modal-close" id="closeFeedback" aria-label="Close feedback">✕</button>
+      <div class="modal-icon">💬</div>
+      <h2 class="modal-title">Share Your Feedback</h2>
+      <p class="modal-sub">Help us improve AirLeaf for everyone.</p>
+
+      <div class="feedback-form">
+        <div class="feedback-type-row">
+          <button class="fb-type-btn selected" data-type="suggestion" type="button">💡 Suggestion</button>
+          <button class="fb-type-btn" data-type="bug" type="button">🐛 Bug Report</button>
+          <button class="fb-type-btn" data-type="compliment" type="button">⭐ Compliment</button>
+        </div>
+
+        <div class="fb-field">
+          <label class="fb-label">Rating</label>
+          <div class="star-row" id="starRow">
+            <button class="star-btn" data-star="1" type="button">★</button>
+            <button class="star-btn" data-star="2" type="button">★</button>
+            <button class="star-btn" data-star="3" type="button">★</button>
+            <button class="star-btn" data-star="4" type="button">★</button>
+            <button class="star-btn" data-star="5" type="button">★</button>
+          </div>
+        </div>
+
+        <div class="fb-field">
+          <label class="fb-label" for="feedbackText">Your Message</label>
+          <textarea class="fb-textarea" id="feedbackText" placeholder="Tell us what you think…" rows="4"></textarea>
+        </div>
+
+        <button class="btn-primary fb-submit" id="submitFeedback" type="button" style="animation:none;width:100%;background:var(--green-main);color:#fff;">
+          Send Feedback 🚀
+        </button>
+        <div class="fb-success hidden" id="fbSuccess">
+          <div class="fb-success-icon">🎉</div>
+          <p>Thanks for your feedback! We really appreciate it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast hidden" id="toast"></div>
+
+  <!-- Firebase Analytics -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6QpR8iqmM5tcyut4Wm6K87esL5EsJXEY",
+      authDomain: "airleaf-ef6da.firebaseapp.com",
+      projectId: "airleaf-ef6da",
+      storageBucket: "airleaf-ef6da.firebasestorage.app",
+      messagingSenderId: "434195609347",
+      appId: "1:434195609347:web:02af8b7164c16042a11b36",
+      measurementId: "G-HG04P1C1VZ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // ── Page view tracking ──
+    logEvent(analytics, 'page_view', { page_title: 'AirLeaf Home' });
+
+    // ── Custom event helpers — available globally ──
+    window.trackEvent = (eventName, params = {}) => {
+      try { logEvent(analytics, eventName, params); } catch(e) {}
+    };
+
+    console.log('✅ Firebase Analytics connected — AirLeaf');
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>
