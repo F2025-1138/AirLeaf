@@ -729,12 +729,29 @@ document.getElementById('starRow')?.addEventListener('mouseleave', () => {
 // Submit feedback
 document.getElementById('submitFeedback')?.addEventListener('click', () => {
   const text = document.getElementById('feedbackText').value.trim();
-  // Save feedback to localStorage (for demo)
-  const fb = { type: selectedFeedbackType, stars: selectedStars, message: text, date: new Date().toISOString() };
+  const fb = {
+    type:    selectedFeedbackType,
+    stars:   selectedStars,
+    message: text,
+    date:    new Date().toISOString()
+  };
+
+  // Save to localStorage (local)
   const all = JSON.parse(localStorage.getItem('airleaf_feedback') || '[]');
   all.push(fb);
   localStorage.setItem('airleaf_feedback', JSON.stringify(all));
-  // 🔥 Track feedback submitted
+
+  // 🔥 Save to Firestore (real database)
+  if (window.saveFeedbackToFirestore) {
+    window.saveFeedbackToFirestore({
+      type:    fb.type    || 'general',
+      stars:   fb.stars   || 0,
+      message: fb.message || '',
+      date:    fb.date
+    });
+  }
+
+  // 🔥 Track analytics event
   if (window.trackEvent) window.trackEvent('feedback_submitted', { type: selectedFeedbackType, stars: selectedStars || 0 });
 
   document.getElementById('submitFeedback').classList.add('hidden');
