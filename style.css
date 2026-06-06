@@ -1087,3 +1087,38 @@ body {
   padding: 0.4rem 1rem !important; font-size: 0.85rem !important;
 }
 .nav-logout-btn:hover { border-color: #e53e3e !important; color: #e53e3e !important; }
+
+/* ════════════════════════════════════════
+   LOADING SCREEN
+   ════════════════════════════════════════ */
+.auth-loading {
+  position: fixed; inset: 0; z-index: 99999;
+  background: linear-gradient(145deg, #0d1f1a, #1a3a2a);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-loading-inner { text-align: center; }
+.auth-loading-logo {
+  font-size: 4rem; margin-bottom: 0.5rem;
+  animation: loadingPulse 1.5s ease-in-out infinite;
+}
+@keyframes loadingPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.1); opacity: 0.8; }
+}
+.auth-loading-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--green-pale); margin-bottom: 1.5rem;
+}
+.auth-loading-dots { display: flex; gap: 0.4rem; justify-content: center; }
+.auth-loading-dots span {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green-pale); opacity: 0.3;
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.auth-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.auth-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotBounce {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1.2); }
+}
