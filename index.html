@@ -26,6 +26,8 @@
         </div>
         <button class="nav-btn" data-page="profile" id="navProfileBtn">Profile</button>
         <button class="nav-btn nav-feedback-btn" id="openFeedback">💬 Feedback</button>
+        <button class="nav-btn nav-login-btn" id="navLoginBtn">🔑 Login</button>
+        <button class="nav-btn nav-logout-btn hidden" id="navLogoutBtn">👋 Logout</button>
       </div>
       <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">☰</button>
     </div>
@@ -703,14 +705,61 @@
     </div>
   </div>
 
+  <!-- ===== LOGIN MODAL ===== -->
+  <div class="auth-overlay hidden" id="authOverlay">
+    <div class="auth-modal">
+      <button class="auth-close" id="authClose">✕</button>
+
+      <!-- Logo -->
+      <div class="auth-logo">🌿</div>
+      <h2 class="auth-title">Welcome to AirLeaf</h2>
+      <p class="auth-sub">Login or create an account to save your data</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Login</button>
+        <button class="auth-tab" id="tabSignup">Sign Up</button>
+      </div>
+
+      <!-- Google Button -->
+      <button class="auth-google-btn" id="googleSignInBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google"/>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <!-- Email Form -->
+      <div class="auth-form">
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="authEmail" placeholder="your@email.com"/>
+        </div>
+        <div class="auth-field">
+          <label>Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••"/>
+        </div>
+        <div class="auth-error hidden" id="authError"></div>
+        <button class="auth-submit-btn" id="authSubmitBtn">Login</button>
+      </div>
+
+      <p class="auth-switch">Don't have an account? <span id="authSwitchLink">Sign up</span></p>
+    </div>
+  </div>
+
   <!-- Toast notification -->
   <div class="toast hidden" id="toast"></div>
 
-  <!-- Firebase Analytics + Firestore -->
+  <!-- Firebase Analytics + Firestore + Auth -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      signInWithPopup, GoogleAuthProvider, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA6QpR8iqmM5tcyut4Wm6K87esL5EsJXEY",
@@ -722,9 +771,11 @@
       measurementId: "G-HG04P1C1VZ"
     };
 
-    const app       = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db        = getFirestore(app);
+    const app      = initializeApp(firebaseConfig);
+    const analytics= getAnalytics(app);
+    const db       = getFirestore(app);
+    const auth     = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
     // ── Page view ──
     logEvent(analytics, 'page_view', { page_title: 'AirLeaf Home' });
@@ -739,6 +790,8 @@
       try {
         await addDoc(collection(db, 'feedbacks'), {
           ...feedbackData,
+          userId: auth.currentUser?.uid || 'anonymous',
+          userEmail: auth.currentUser?.email || 'anonymous',
           timestamp: serverTimestamp()
         });
         console.log('✅ Feedback saved to Firestore!');
@@ -747,7 +800,116 @@
       }
     };
 
-    console.log('✅ Firebase connected — AirLeaf');
+    // ── Auth state listener ──
+    onAuthStateChanged(auth, (user) => {
+      const loginBtn  = document.getElementById('navLoginBtn');
+      const logoutBtn = document.getElementById('navLogoutBtn');
+      const chip      = document.getElementById('navProfileChip');
+      const chipName  = document.getElementById('navProfileName');
+      const chipAvatar= document.getElementById('navProfileAvatar');
+
+      if (user) {
+        // Logged in
+        loginBtn?.classList.add('hidden');
+        logoutBtn?.classList.remove('hidden');
+        // Update nav chip
+        chip?.classList.remove('hidden');
+        document.getElementById('navProfileBtn')?.classList.add('hidden');
+        if (chipName)  chipName.textContent  = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+        if (chipAvatar) chipAvatar.textContent = user.photoURL ? '' : '🌿';
+        if (user.photoURL && chipAvatar) {
+          chipAvatar.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`;
+        }
+        // Update profile hero
+        const heroGuest = document.getElementById('profileHeroGuest');
+        const heroUser  = document.getElementById('profileHeroUser');
+        if (heroGuest && heroUser) {
+          heroGuest.classList.add('hidden');
+          heroUser.classList.remove('hidden');
+          document.getElementById('profileHeroName').textContent = user.displayName || user.email.split('@')[0];
+          document.getElementById('profileHeroAvatar').textContent = '🌿';
+          if (user.photoURL) {
+            document.getElementById('profileHeroAvatar').innerHTML = `<img src="${user.photoURL}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;"/>`;
+          }
+          document.getElementById('profileHeroMeta').textContent = '📧 ' + user.email;
+        }
+        window.showToast?.('👋 Welcome, ' + (user.displayName || user.email.split('@')[0]) + '!');
+      } else {
+        // Logged out
+        loginBtn?.classList.remove('hidden');
+        logoutBtn?.classList.add('hidden');
+      }
+    });
+
+    // ── Login Modal ──
+    const overlay = document.getElementById('authOverlay');
+    let isLogin = true;
+
+    window.openAuthModal = () => overlay?.classList.remove('hidden');
+    document.getElementById('authClose')?.addEventListener('click', () => overlay?.classList.add('hidden'));
+    overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.add('hidden'); });
+
+    // Tabs
+    document.getElementById('tabLogin')?.addEventListener('click', () => {
+      isLogin = true;
+      document.getElementById('tabLogin').classList.add('active');
+      document.getElementById('tabSignup').classList.remove('active');
+      document.getElementById('authSubmitBtn').textContent = 'Login';
+      document.getElementById('authSwitchLink').textContent = 'Sign up';
+      document.querySelector('.auth-switch').innerHTML = "Don't have an account? <span id='authSwitchLink'>Sign up</span>";
+      document.getElementById('authSwitchLink')?.addEventListener('click', () => document.getElementById('tabSignup').click());
+    });
+    document.getElementById('tabSignup')?.addEventListener('click', () => {
+      isLogin = false;
+      document.getElementById('tabSignup').classList.add('active');
+      document.getElementById('tabLogin').classList.remove('active');
+      document.getElementById('authSubmitBtn').textContent = 'Create Account';
+      document.querySelector('.auth-switch').innerHTML = "Already have an account? <span id='authSwitchLink'>Login</span>";
+      document.getElementById('authSwitchLink')?.addEventListener('click', () => document.getElementById('tabLogin').click());
+    });
+    document.getElementById('authSwitchLink')?.addEventListener('click', () => {
+      isLogin ? document.getElementById('tabSignup').click() : document.getElementById('tabLogin').click();
+    });
+
+    // Email submit
+    document.getElementById('authSubmitBtn')?.addEventListener('click', async () => {
+      const email    = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const errEl    = document.getElementById('authError');
+      errEl.classList.add('hidden');
+      try {
+        if (isLogin) {
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, password);
+        }
+        overlay.classList.add('hidden');
+      } catch (err) {
+        errEl.textContent = err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, '');
+        errEl.classList.remove('hidden');
+      }
+    });
+
+    // Google sign-in
+    document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        overlay.classList.add('hidden');
+      } catch (err) {
+        const errEl = document.getElementById('authError');
+        errEl.textContent = 'Google sign-in failed. Please try again.';
+        errEl.classList.remove('hidden');
+      }
+    });
+
+    // Nav login/logout
+    document.getElementById('navLoginBtn')?.addEventListener('click', () => window.openAuthModal());
+    document.getElementById('navLogoutBtn')?.addEventListener('click', async () => {
+      await signOut(auth);
+      window.showToast?.('👋 Logged out successfully!');
+    });
+
+    console.log('✅ Firebase fully connected — AirLeaf');
   </script>
 
   <script src="script.js"></script>
