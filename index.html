@@ -706,10 +706,11 @@
   <!-- Toast notification -->
   <div class="toast hidden" id="toast"></div>
 
-  <!-- Firebase Analytics -->
+  <!-- Firebase Analytics + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA6QpR8iqmM5tcyut4Wm6K87esL5EsJXEY",
@@ -721,18 +722,32 @@
       measurementId: "G-HG04P1C1VZ"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app       = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
+    const db        = getFirestore(app);
 
-    // ── Page view tracking ──
+    // ── Page view ──
     logEvent(analytics, 'page_view', { page_title: 'AirLeaf Home' });
 
-    // ── Custom event helpers — available globally ──
+    // ── Global event tracker ──
     window.trackEvent = (eventName, params = {}) => {
       try { logEvent(analytics, eventName, params); } catch(e) {}
     };
 
-    console.log('✅ Firebase Analytics connected — AirLeaf');
+    // ── Save feedback to Firestore ──
+    window.saveFeedbackToFirestore = async (feedbackData) => {
+      try {
+        await addDoc(collection(db, 'feedbacks'), {
+          ...feedbackData,
+          timestamp: serverTimestamp()
+        });
+        console.log('✅ Feedback saved to Firestore!');
+      } catch (err) {
+        console.error('❌ Firestore error:', err);
+      }
+    };
+
+    console.log('✅ Firebase connected — AirLeaf');
   </script>
 
   <script src="script.js"></script>
