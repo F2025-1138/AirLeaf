@@ -770,6 +770,7 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
 }
+window.showToast = showToast;
 
 // ─── Scroll Reveal ────────────────────────────────
 
