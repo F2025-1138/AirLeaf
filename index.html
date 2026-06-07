@@ -879,7 +879,7 @@
  if (chipName) chipName.textContent = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
  if (chipAvatar) chipAvatar.textContent = user.photoURL ? '' : '';
  if (user.photoURL && chipAvatar) {
- chipAvatar.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`;
+ chipAvatar.innerHTML = `<img src="${user.photoURL}" alt="User profile photo" style="width:24px;height:24px;border-radius:50%;object-fit:cover;"/>`;
  }
 
  // Profile hero
@@ -892,7 +892,7 @@
  document.getElementById('profileHeroName').textContent = displayName;
  const heroAvatarEl = document.getElementById('profileHeroAvatar');
  if (user.photoURL) {
-   heroAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;"/>`;
+   heroAvatarEl.innerHTML = `<img src="${user.photoURL}" alt="User profile photo" style="width:70px;height:70px;border-radius:50%;object-fit:cover;"/>`;
  } else {
    heroAvatarEl.textContent = displayName[0].toUpperCase();
    heroAvatarEl.style.cssText = 'font-size:2rem;font-weight:800;';
