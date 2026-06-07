@@ -629,7 +629,12 @@ body {
   text-decoration: none;
 }
 .nav-profile-chip:hover { background: rgba(183,228,199,0.28); }
-.nav-profile-avatar { font-size: 1.3rem; line-height: 1; }
+.nav-profile-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--green-pale); color: var(--green-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
+}
 .nav-profile-name { font-size: 0.85rem; font-weight: 600; color: var(--green-pale); }
 
 /* ── Profile Hero Banner ── */
@@ -715,13 +720,26 @@ body {
    ════════════════════════════════════════ */
 .profile-container { max-width: 700px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
 .profile-avatar-wrap { text-align: center; margin-bottom: 2rem; }
-.profile-avatar { font-size: 5rem; cursor: pointer; transition: transform 0.2s; display: inline-block; }
-.profile-avatar:hover { transform: scale(1.1); }
-.avatar-picker { display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; }
-.avatar-opt { background: var(--white); border: 2px solid var(--cream-dark); border-radius: 50%; width: 46px; height: 46px; font-size: 1.5rem; cursor: pointer; transition: var(--transition); }
-.avatar-opt:hover { border-color: var(--green-main); transform: scale(1.15); }
-.avatar-opt.active { border-color: var(--green-main); background: var(--green-mist); }
-.avatar-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+.profile-avatar {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: var(--green-main); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(45,106,79,0.3);
+  border: 3px solid rgba(255,255,255,0.4);
+}
+.profile-avatar:hover { transform: scale(1.07); box-shadow: 0 6px 24px rgba(45,106,79,0.4); }
+.avatar-initials { font-size: 2.5rem; font-weight: 800; font-family: 'Playfair Display', serif; pointer-events: none; }
+.avatar-picker { display: flex; justify-content: center; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+.avatar-opt {
+  border: 3px solid transparent; border-radius: 50%;
+  width: 40px; height: 40px; font-size: 0.85rem; font-weight: 800;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-opt:hover { transform: scale(1.15); opacity: 0.85; }
+.avatar-opt.active { border-color: var(--green-dark); box-shadow: 0 0 0 3px rgba(45,106,79,0.3); }
+.avatar-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.6rem; }
 .profile-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; border: 1px solid var(--cream-dark); box-shadow: var(--shadow-sm); }
 .profile-section-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--green-dark); margin-bottom: 1.25rem; }
 .profile-form { display: grid; gap: 1.1rem; }
