@@ -114,38 +114,60 @@ let selectedStars = 0;
 
 // SPA Router 
 
+// ── Navigation ──
 function showPage(pageId) {
- document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
- document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.remove('active'));
+  if (!pageId) return;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn[data-page]').forEach(b => b.classList.remove('active'));
 
- const page = document.getElementById('page-' + pageId);
- if (page) page.classList.add('active');
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
 
- document.querySelectorAll(`.nav-btn[data-page="${pageId}"]`).forEach(b => b.classList.add('active'));
+  document.querySelectorAll(`.nav-btn[data-page="${pageId}"]`).forEach(b => b.classList.add('active'));
 
- // Close mobile nav
- document.getElementById('navMobile').classList.remove('open');
+  const navMobile = document.getElementById('navMobile');
+  if (navMobile) navMobile.classList.remove('open');
 
- // Scroll to top
- window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
- // Page-specific init
- if (pageId === 'dashboard') renderDashboard();
- if (pageId === 'profile') loadProfile();
+  if (pageId === 'dashboard') renderDashboard();
+  if (pageId === 'profile') loadProfile();
 }
 
-// Delegate nav clicks
-document.querySelectorAll('.nav-btn[data-page], [data-page]').forEach(el => {
- el.addEventListener('click', () => showPage(el.dataset.page));
-});
+// Single clean click handler for all navigation
+document.addEventListener('click', e => {
 
-// Hamburger
-document.getElementById('navHamburger').addEventListener('click', () => {
- document.getElementById('navMobile').classList.toggle('open');
-});
+  // Feedback modal
+  if (e.target.closest('#openFeedback') || e.target.closest('#openFeedbackMobile')) {
+    openFeedback(); return;
+  }
+  if (e.target.closest('#closeFeedback')) { closeFeedback(); return; }
+  if (e.target.id === 'feedbackOverlay') { closeFeedback(); return; }
 
-// Nav logo
-document.querySelector('.nav-logo').addEventListener('click', () => showPage('home'));
+  // Hamburger
+  if (e.target.closest('#navHamburger')) {
+    const navMobile = document.getElementById('navMobile');
+    if (navMobile) navMobile.classList.toggle('open');
+    return;
+  }
+
+  // Nav logo
+  if (e.target.closest('.nav-logo')) {
+    showPage('home'); return;
+  }
+
+  // Nav profile chip
+  if (e.target.closest('#navProfileChip')) {
+    showPage('profile'); return;
+  }
+
+  // Any button or element with data-page (but NOT the chip div itself)
+  const pageEl = e.target.closest('[data-page]');
+  if (pageEl && pageEl.dataset.page && pageEl.id !== 'navProfileChip') {
+    showPage(pageEl.dataset.page);
+    return;
+  }
+});
 
 // Option Groups 
 
@@ -726,18 +748,19 @@ document.getElementById('avatarPicker')?.addEventListener('click', e => {
 // Feedback Modal 
 
 function openFeedback() {
- document.getElementById('feedbackOverlay').classList.remove('hidden');
- document.getElementById('fbSuccess').classList.add('hidden');
- document.getElementById('submitFeedback').classList.remove('hidden');
- document.getElementById('feedbackText').value = '';
- resetStars();
+  const overlay = document.getElementById('feedbackOverlay');
+  const success = document.getElementById('fbSuccess');
+  const submit  = document.getElementById('submitFeedback');
+  const text    = document.getElementById('feedbackText');
+  if (overlay) overlay.classList.remove('hidden');
+  if (success) success.classList.add('hidden');
+  if (submit)  submit.classList.remove('hidden');
+  if (text)    text.value = '';
+  resetStars();
 }
-function closeFeedback() { document.getElementById('feedbackOverlay').classList.add('hidden'); }
-
-document.getElementById('openFeedback')?.addEventListener('click', openFeedback);
-document.getElementById('openFeedbackMobile')?.addEventListener('click', openFeedback);
-document.getElementById('closeFeedback')?.addEventListener('click', closeFeedback);
-document.getElementById('feedbackOverlay')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeFeedback(); });
+function closeFeedback() {
+  document.getElementById('feedbackOverlay')?.classList.add('hidden');
+}
 
 // Feedback type buttons
 document.querySelectorAll('.fb-type-btn').forEach(btn => {
